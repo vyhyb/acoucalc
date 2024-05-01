@@ -1,3 +1,5 @@
+"""A module providing the core functionality of the acoucalc package.
+"""
 import numpy as np
 
 def add_layer(pv, tm):

@@ -1,3 +1,5 @@
+"""Module for transfer matrices of different layers
+"""
 import numpy as np
 
 # transfer matrix for fluid layer

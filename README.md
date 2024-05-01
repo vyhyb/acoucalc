@@ -1,4 +1,3 @@
-"""
 # acoucalc
 
 This library is ment to provide a simple way to calculate acoustic 
@@ -91,4 +90,3 @@ Please make sure to update tests as appropriate.
 
 - [1] J.-F. Allard and N. Atalla, Propagation of sound in porous media, 2nd ed. Wiley, 2009.
 - [2] T. J. Cox and P. D’Antonio, Acoustic absorbers and diffusers: Theory, design and application, 3rd ed. Taylor, 2017. doi: 10.4324/9781482266412.
-"""

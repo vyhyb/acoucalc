@@ -1,3 +1,5 @@
+"""Module containing different simple mechanical impedance models.
+"""
 import numpy as np
 
 def thin_plate(

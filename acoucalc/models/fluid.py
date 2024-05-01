@@ -1,3 +1,5 @@
+"""Module for equivalent fluid material models.
+"""
 from typing import Tuple
 import numpy as np
 
