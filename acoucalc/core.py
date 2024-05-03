@@ -23,6 +23,30 @@ def add_layer(
     pv_new = np.einsum('ijk,jk->ik', tm, pv)
     return pv_new
 
+def calculate_global_transfer_matrix(
+        tms: list[np.ndarray]
+    ) -> np.ndarray:
+    """Calculate the global transfer matrix of the system.
+
+    Parameters
+    ----------
+    tms : list[np.ndarray]
+        List of transfer matrices of the system.
+
+    Returns
+    -------
+    np.ndarray
+        Global transfer matrix of the system.
+    """
+    # calculate the global transfer matrix by means of einsum
+    # the local transfer matrices are of the shape (2, 2, n) and the global transfer matrix is of the shape (2, 2, n)
+    # the last dimension contains the frequency information
+    # the global transfer matrix is calculated by multiplying the local transfer matrices along the last dimension
+    tm = tms[0]
+    for tm_i in tms[1:]:
+        tm = np.einsum('ijk,jlk->ilk', tm_i, tm)
+    return tm
+
 def initial_pv(
         p: float|np.ndarray, 
         v: float|np.ndarray, 
