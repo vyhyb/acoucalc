@@ -26,6 +26,18 @@ def tm_fluid(
     -------
     np.ndarray
         Transfer matrix of the fluid layer.
+
+    Notes
+    -----
+    The transfer matrix is calculated as follows:
+    $$[T] = \begin{bmatrix}
+    \cos(k_3h)&j\frac{\omega \rho}{k_3} \sin(k_3h)\\
+    j\frac{k_3}{\omega \rho} \sin(k_3h) & \cos(k_3h)
+    \end{bmatrix}$$
+
+    where:
+    - $k_3 = \omega \sqrt{\frac{\rho}{K}}$ is the normal component 
+        of the wavenumber of the fluid layer,
     """
     w = 2*np.pi*f
     wavenumber = w*np.sqrt(eff_density/bulk_modulus)

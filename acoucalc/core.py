@@ -19,6 +19,25 @@ def add_layer(
     -------
     np.ndarray
         Updated pressure and velocity vectors.
+
+    Notes
+    -----
+    The transfer matrix of the new layer is multiplied with the existing pressure-velocity vector.
+    $$
+    \left[
+        \begin{array}{c}p_{\text{new}}\\
+        v_{\text{new}}\end{array}
+    \right] = \left[
+        \begin{array}{cc}
+            m_{11} & m_{12}\\
+            m_{21} & m_{22}
+        \end{array}
+    \right]\left[
+        \begin{array}{c}
+            p\\v
+        \end{array}
+    \right]
+    $$
     """
     pv_new = np.einsum('ijk,jk->ik', tm, pv)
     return pv_new
@@ -68,6 +87,33 @@ def initial_pv(
     -------
     np.ndarray
         Initial pressure and velocity vectors.
+
+    Notes
+    -----
+    Basic boundary condition examples could be:
+    - rigid wall
+    $$\left[
+        \begin{array}{c}
+            p_0\\
+            v_0
+        \end{array}
+    \right] = \left[
+        \begin{array}{c}
+            1\\
+            0
+        \end{array}
+    \right]$$
+    - free field (perfectly matched layer)
+    $$\left[
+        \begin{array}{c}
+            p_0\\
+            v_0
+        \end{array} = \left[
+        \begin{array}{c}
+            1\\
+            1/Z_0
+        \end{array}
+    where $Z_0=\rho_0 c_0$ is the characteristic impedance of the surrounding medium.
     """
     if f is not None:
         p = p*np.ones_like(f)
@@ -128,6 +174,13 @@ def transmission_coefficient(
     -------
     np.ndarray
         Transmission coefficient.
+
+    Notes
+    -----
+    The transmission coefficient is calculated as follows:
+    $$
+    T = \frac{2}{m_{11} + \frac{m_{12}}{Z_0} + Z_0 m_{21} + m_{22}}
+    $$
     """
     tc = (
         # np.exp(1j * wavenumber_air * thickness) *
