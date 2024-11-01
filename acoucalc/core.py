@@ -159,7 +159,9 @@ def absorption_coefficient(refl_factor:np.ndarray) -> np.ndarray:
 
 def transmission_coefficient(
         tm: np.ndarray,
-        char_impedance_air: float
+        char_impedance_air: float,
+        wavenumber_air: float,
+        thickness: float
     ) -> np.ndarray:
     """Calculate the transmission coefficient of the system.
 
@@ -169,6 +171,10 @@ def transmission_coefficient(
         Global transfer matrix of the system.
     char_impedance_air : float
         Characteristic impedance of air.
+    wavenumber_air : float
+        Wavenumber in air.
+    thickness : float
+        Thickness of the system.
 
     Returns
     -------
@@ -183,7 +189,7 @@ def transmission_coefficient(
     $$
     """
     tc = (
-        # np.exp(1j * wavenumber_air * thickness) *
+        np.exp(1j * wavenumber_air * thickness) *
         2 /
         (tm[0][0] 
             + tm[0][1]/char_impedance_air
@@ -240,7 +246,14 @@ def transmitted_pressure(
     np.ndarray
         Pressure transmitted through the system.
     """
-    p_tr = p_init * transmission_coefficient(tm, char_impedance_air)
+    p_tr = p_init 
+    p_tr *= (2 /
+        (tm[0][0] 
+            + tm[0][1]/char_impedance_air
+            + char_impedance_air*tm[1][0]
+            + tm[1][1]
+        )
+    )
     return p_tr
 
 
