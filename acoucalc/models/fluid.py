@@ -245,3 +245,242 @@ def jca(
         atm_pressure
         )
     return eff_density, bulk_modulus
+
+def jcal_bulk_modulus(
+        thermal_char_length: float,
+        porosity: float,
+        static_thermal_permeability: float,
+        angular_f: np.ndarray,
+        viscosity=1.84e-5,
+        gamma=1.4,
+        prandtl=0.77,
+        rho_0=1.21,
+        atm_pressure=101320
+        ) -> np.ndarray:
+    """Calculate the bulk modulus of a fluid using the Johnson-Champoux-Allard-Lafarge (JCAL) model.
+
+    Parameters
+    ----------
+    thermal_char_length : float
+        Thermal characteristic length of the fluid.
+    porosity : float
+        Porosity of the fluid.
+    static_thermal_permeability : float
+        Static thermal permeability of the fluid.
+    angular_f : np.ndarray
+        Array of angular frequencies.
+    viscosity : float, optional
+        Dynamic viscosity of the fluid, by default 1.84e-5.
+    gamma : float, optional
+        Specific heat ratio of the fluid, by default 1.4.
+    prandtl : float, optional
+        Prandtl number of the fluid, by default 0.77.
+    rho_0 : float, optional
+        Reference density of the fluid, by default 1.21.
+    atm_pressure : float, optional
+        Atmospheric pressure, by default 101320.
+
+    Returns
+    -------
+    np.ndarray
+        Bulk modulus of the fluid.
+
+    References
+    ----------
+    [1] D. Lafarge, P. Lemarinier, J. F. Allard, and V. Tarnow, ‘Dynamic compressibility of air in porous structures at audible frequencies’, The Journal of the Acoustical Society of America, vol. 102, no. 4, pp. 1995–2006, Oct. 1997, doi: 10.1121/1.419690.
+    """
+    bm = (gamma * atm_pressure / porosity /
+          (gamma - (gamma-1)/(1 - (1j * porosity * viscosity)/
+            (static_thermal_permeability**2 * prandtl * angular_f * rho_0)
+            *np.sqrt(1 + 
+                (4j * rho_0 * angular_f * prandtl * static_thermal_permeability**2)
+                /(viscosity * thermal_char_length**2 * porosity**2)))))
+    return bm
+
+def horoshenkov_eff_density(
+        porosity,
+        median_pore_size,
+        std_in_pore_size,
+        angular_f: np.ndarray,
+        viscosity=1.84e-5,
+        gamma=1.4,
+        prandtl=0.77,
+        rho_0=1.21,
+        atm_pressure=101320
+        ) -> np.ndarray:
+    """Calculate the effective density of a porous medium using the Horoshenkov model.
+
+    Parameters
+    ----------
+    porosity : float
+        Porosity of the porous medium.
+    median_pore_size : float
+        Median pore size of the porous medium.
+    std_in_pore_size : float
+        Standard deviation in pore size.
+    angular_f : np.ndarray
+        Array of angular frequencies.
+    viscosity : float, optional
+        Dynamic viscosity of air, by default 1.84e-5.
+    gamma : float, optional
+        Specific heat ratio air, by default 1.4.
+    prandtl : float, optional
+        Prandtl number of air, by default 0.77.
+    rho_0 : float, optional
+        Reference density of air, by default 1.21.
+    atm_pressure : float, optional
+        Atmospheric pressure, by default 101320.
+
+    Returns
+    -------
+    np.ndarray
+        The effective density of the porous medium.
+
+    References
+    ----------
+    [1] K. V. Horoshenkov, A. Hurrell, and J.-P. Groby, ‘A three-parameter analytical model for the acoustical properties of porous media’, The Journal of the Acoustical Society of America, vol. 145, no. 4, pp. 2512–2517, Apr. 2019, doi: 10.1121/1.5098778.
+    """
+    tortuosity = np.exp(4 * (std_in_pore_size * np.log(2))**2)
+    static_thermal_permeability = (porosity * median_pore_size**2 / (8 * tortuosity) * 
+                                   np.exp(6 * (std_in_pore_size * np.log(2))**2))
+    flow_resistivity = viscosity / static_thermal_permeability
+    viscous_char_length = median_pore_size * np.exp(-2.5 * (std_in_pore_size * np.log(2))**2)
+    eff_density = jca_eff_density(
+        tortuosity,
+        flow_resistivity,
+        porosity,
+        viscous_char_length,
+        angular_f,
+        rho_0,
+        viscosity
+        )
+    return eff_density
+
+def horoshenkov_bulk_modulus(
+        porosity,
+        median_pore_size,
+        std_in_pore_size,
+        angular_f: np.ndarray,
+        viscosity=1.84e-5,
+        gamma=1.4,
+        prandtl=0.77,
+        rho_0=1.21,
+        atm_pressure=101320
+        ) -> np.ndarray:
+    """Calculate the bulk modulus of a porous medium using the Horoshenkov model.
+
+    Parameters
+    ----------
+    porosity : float
+        Porosity of the porous medium.
+    median_pore_size : float
+        Median pore size of the porous medium.
+    std_in_pore_size : float
+        Standard deviation in pore size.
+    angular_f : np.ndarray
+        Array of angular frequencies.
+    viscosity : float, optional
+        Dynamic viscosity of air, by default 1.84e-5.
+    gamma : float, optional
+        Specific heat ratio air, by default 1.4.
+    prandtl : float, optional
+        Prandtl number of air, by default 0.77.
+    rho_0 : float, optional
+        Reference density of air, by default 1.21.
+    atm_pressure : float, optional
+        Atmospheric pressure, by default 101320.
+
+    Returns
+    -------
+    np.ndarray
+        The bulk modulus of the porous medium.
+
+    References
+    ----------
+    [1] K. V. Horoshenkov, A. Hurrell, and J.-P. Groby, ‘A three-parameter analytical model for the acoustical properties of porous media’, The Journal of the Acoustical Society of America, vol. 145, no. 4, pp. 2512–2517, Apr. 2019, doi: 10.1121/1.5098778.
+    """
+    tortuosity = np.exp(4 * (std_in_pore_size * np.log(2))**2)
+    static_thermal_permeability = (porosity * median_pore_size**2 / (8 * tortuosity) * 
+                                   np.exp(6 * (std_in_pore_size * np.log(2))**2))
+    thermal_char_length = median_pore_size * np.exp(1.5 * (std_in_pore_size * np.log(2))**2)
+    bm = jcal_bulk_modulus(
+        thermal_char_length,
+        porosity,
+        static_thermal_permeability,
+        angular_f,
+        viscosity,
+        gamma,
+        prandtl,
+        rho_0,
+        atm_pressure
+        )
+    return bm
+
+def horoshenkov(
+        porosity,
+        median_pore_size,
+        std_in_pore_size,
+        f: np.ndarray,
+        rho_air=1.21,
+        viscosity=1.84e-5,
+        gamma=1.4,
+        prandtl=0.77,
+        atm_pressure=101320
+        ) -> Tuple[np.ndarray, np.ndarray]:
+    """Calculates the effective density and bulk modulus of a porous medium
+    using the Horoshenkov model.
+
+    Parameters
+    ----------
+    porosity : float
+        Porosity of the porous medium.
+    median_pore_size : float
+        Median pore size of the porous medium.
+    std_in_pore_size : float
+        Standard deviation in pore size.
+    f : np.ndarray
+        Array of frequencies.
+    rho_air : float, optional
+        Density of air. Default is 1.21 kg/m^3.
+    viscosity : float, optional
+        Viscosity of air. Default is 1.84e-5 kg/(m*s).
+    gamma : float, optional
+        Specific heat ratio of air. Default is 1.4.
+    prandtl : float, optional
+        Prandtl number of air. Default is 0.77.
+    atm_pressure : int, optional
+        Atmospheric pressure. Default is 101320 Pa.
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray]
+        Tuple containing the effective density and bulk modulus of the porous medium.
+
+    References
+    ----------
+    [1] K. V. Horoshenkov, A. Hurrell, and J.-P. Groby, ‘A three-parameter analytical model for the acoustical properties of porous media’, The Journal of the Acoustical Society of America, vol. 145, no. 4, pp. 2512–2517, Apr. 2019, doi: 10.1121/1.5098778.
+    """
+    angular_f = 2*np.pi*f
+    eff_density = horoshenkov_eff_density(
+        porosity,
+        median_pore_size,
+        std_in_pore_size,
+        angular_f,
+        viscosity,
+        gamma,
+        prandtl,
+        rho_air,
+        atm_pressure
+        )
+    bulk_modulus = horoshenkov_bulk_modulus(
+        porosity,
+        median_pore_size,
+        std_in_pore_size,
+        angular_f,
+        viscosity,
+        gamma,
+        prandtl,
+        rho_air,
+        atm_pressure
+        )
+    return eff_density, bulk_modulus
