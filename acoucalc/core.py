@@ -163,8 +163,9 @@ def transmission_coefficient(
         wavenumber_air: float,
         thickness: float
     ) -> np.ndarray:
-    """Calculate the transmission coefficient of the system.
-
+    """Calculate the relative transmission coefficient of the system.
+    alias: sample transmission coefficient compared to air
+    
     Parameters
     ----------
     tm : np.ndarray
